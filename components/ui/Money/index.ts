@@ -1,1 +1,1 @@
-export { Money, type MoneyProps } from './Money'
+export { Money, type MoneyProps, useAmountsHidden } from './Money'

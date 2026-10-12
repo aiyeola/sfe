@@ -1,4 +1,4 @@
-import type { ApiSuccess } from '@/types/api'
+import type { ApiErrorBody, ApiSuccess } from '@/types/api'
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '/api'
 
@@ -21,9 +21,16 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<ApiSucc
       ...init.headers,
     },
   })
-  const body = await res.json()
-  console.log('[api]', path, body)
-  return body
+  const body: unknown = await res.json().catch(() => null)
+  if (!res.ok) {
+    const error = (body as Partial<ApiErrorBody> | null)?.error
+    throw new ApiError(
+      res.status,
+      error?.code ?? 'UNKNOWN',
+      error?.message ?? 'Something went wrong. Please try again.'
+    )
+  }
+  return body as ApiSuccess<T>
 }
 
 export const api = {

@@ -1,12 +1,13 @@
 'use client'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import type { Transaction } from '@/types/api'
 import { Button, Card, EmptyState, Pagination, Select } from '@/components/ui'
 import { TransactionList, TransactionListSkeleton } from '@/components/transactions'
 import { getTransactions } from '@/lib/api/endpoints'
 import { TRANSACTION_STATUS_LABELS, TRANSACTION_TYPE_LABELS } from '@/lib/format'
+import { DetailsDrawer } from './DetailsDrawer'
 import { SearchBox } from './SearchBox'
 import { hasFilters, parseFilters, withParams } from './searchParams'
 import styles from './page.module.css'
@@ -30,7 +31,7 @@ export function TransactionsView() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const filters = parseFilters(searchParams)
-  const { page, q, type, status } = filters
+  const { page, q, type, status, tx } = filters
   const filtered = hasFilters(filters)
 
   const href = (patch: Parameters<typeof withParams>[1]) => PATH + withParams(searchParams, patch)
@@ -53,7 +54,24 @@ export function TransactionsView() {
     if (outOfRange) router.replace(PATH + withParams(searchParams, { page: lastPage }))
   }, [outOfRange, lastPage, router, searchParams])
 
-  const openDetails = (tx: Transaction) => router.push(href({ tx: tx.id }), { scroll: false })
+  // Opening details pushes a history entry, so Back closes them. Closing after an in-app open goes back
+  // to that entry; after arriving from a link there is nothing to go back to, so drop ?tx= instead.
+  const openedInApp = useRef(false)
+  useEffect(() => {
+    if (!tx) openedInApp.current = false
+  }, [tx])
+  const openDetails = (selected: Transaction) => {
+    openedInApp.current = true
+    router.push(href({ tx: selected.id }), { scroll: false })
+  }
+  const closeDetails = () => {
+    if (openedInApp.current) {
+      openedInApp.current = false
+      router.back()
+    } else {
+      router.replace(href({ tx: null }), { scroll: false })
+    }
+  }
 
   let content
   if (isError && !isFetching) {
@@ -97,7 +115,7 @@ export function TransactionsView() {
     content = <TransactionList transactions={transactions} onSelect={openDetails} />
   }
 
-  const showPagination = meta && transactions?.length && !isError && !outOfRange
+  const showPagination = Boolean(transactions?.length) && !isError && !outOfRange
 
   return (
     <div className={styles.page}>
@@ -139,7 +157,7 @@ export function TransactionsView() {
         </div>
       </Card>
 
-      {showPagination && (
+      {showPagination && meta && (
         <div className={styles.footer}>
           <p className={styles.showing}>
             Showing {count.format((meta.page - 1) * meta.limit + 1)}–
@@ -148,6 +166,8 @@ export function TransactionsView() {
           <Pagination page={page} totalPages={meta.totalPages} hrefFor={(p) => href({ page: p })} />
         </div>
       )}
+
+      <DetailsDrawer id={tx} fromList={transactions?.find((t) => t.id === tx)} onClose={closeDetails} />
     </div>
   )
 }

@@ -72,3 +72,7 @@
     display: none;
   }
 }
+
+.drawerState {
+  padding-top: var(--space-10);
+}

@@ -3,8 +3,6 @@ import { useEffect, useEffectEvent, useState } from 'react'
 import { Input } from '@/components/ui'
 import { useDebouncedValue } from '@/lib/useDebouncedValue'
 
-const DEBOUNCE_MS = 300
-
 export interface SearchBoxProps {
   /** The committed search, from the URL. */
   value: string
@@ -19,7 +17,7 @@ export interface SearchBoxProps {
 export function SearchBox({ value, onCommit, className }: SearchBoxProps) {
   const [draft, setDraft] = useState(value)
   const [prevValue, setPrevValue] = useState(value)
-  const debounced = useDebouncedValue(draft, DEBOUNCE_MS)
+  const debounced = useDebouncedValue(draft)
 
   // The URL changed. Unless it's the echo of our own debounced commit (the user may have typed on
   // since), it changed from outside, via Back or Clear filters, so show the new value.

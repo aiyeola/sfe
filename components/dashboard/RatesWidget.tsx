@@ -1,32 +1,23 @@
 'use client'
-import { useEffect, useState } from 'react'
-import type { Currency, Rate } from '@/types/api'
+import { useQueries } from '@tanstack/react-query'
+import type { Currency } from '@/types/api'
 import { Card, CardHeader } from '@/components/ui'
-import { getRate } from '@/lib/api/endpoints'
-import { ignoreAbort } from '@/lib/api/client'
+import { rateQuery } from '@/lib/api/queries'
 import { formatTime } from '@/lib/format'
 import styles from './RatesWidget.module.css'
 
 const QUOTES: Currency[] = ['USD', 'GHS']
 
 export function RatesWidget({ base }: { base: Currency }) {
-  const [rates, setRates] = useState<Rate[]>()
-
-  useEffect(() => {
-    const controller = new AbortController()
-    Promise.all(QUOTES.map((quote) => getRate(quote, base, { signal: controller.signal })))
-      .then((results) => setRates(results.map((res) => res.data)))
-      .catch(ignoreAbort)
-    return () => controller.abort()
-  }, [base])
-  const updatedAt = rates?.[0]?.updatedAt
+  const rates = useQueries({ queries: QUOTES.map((quote) => rateQuery(quote, base)) }).map((q) => q.data)
+  const updatedAt = rates[0]?.updatedAt
 
   return (
     <Card>
       <CardHeader title="Today's rates" />
       <dl className={styles.list}>
         {QUOTES.map((quote, i) => {
-          const rate = rates?.[i]
+          const rate = rates[i]
           return (
             <div key={quote} className={styles.row}>
               <dt>1 {quote}</dt>

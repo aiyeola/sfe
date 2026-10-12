@@ -4,7 +4,7 @@ import type { Transaction } from '@/types/api'
 import { Button, Drawer, EmptyState } from '@/components/ui'
 import { TransactionDetails, TransactionDetailsSkeleton } from '@/components/transactions'
 import { ApiError } from '@/lib/api/client'
-import { getTransaction } from '@/lib/api/endpoints'
+import { transactionQuery } from '@/lib/api/queries'
 import styles from './page.module.css'
 
 export interface DetailsDrawerProps {
@@ -18,8 +18,7 @@ export interface DetailsDrawerProps {
 export function DetailsDrawer({ id, fromList, onClose }: DetailsDrawerProps) {
   // Only fetched when opened from a link to a transaction that isn't on the current page.
   const { data, error, isFetching, refetch } = useQuery({
-    queryKey: ['transaction', id],
-    queryFn: ({ signal }) => getTransaction(id!, { signal }).then((res) => res.data),
+    ...transactionQuery(id!),
     enabled: Boolean(id) && !fromList,
   })
   const transaction = fromList ?? data

@@ -6,7 +6,8 @@ import { useEffect, useRef } from 'react'
 import type { Transaction } from '@/types/api'
 import { Button, Card, EmptyState, Pagination, Select } from '@/components/ui'
 import { TransactionList, TransactionListSkeleton } from '@/components/transactions'
-import { getTransactions } from '@/lib/api/endpoints'
+import { transactionsQuery } from '@/lib/api/queries'
+import { cx } from '@/lib/cx'
 import { TRANSACTION_STATUS_LABELS, TRANSACTION_TYPE_LABELS } from '@/lib/format'
 import { DetailsDrawer } from './DetailsDrawer'
 import { SearchBox } from './SearchBox'
@@ -46,9 +47,8 @@ export function TransactionsView() {
   const clearFilters = () => setFilters({ q: null, type: null, status: null })
 
   const { data, isError, isFetching, isPlaceholderData, refetch } = useQuery({
-    queryKey: ['transactions', { page, q, type, status }],
-    // The signal aborts superseded requests: a slow search for "n" can't overwrite results for "netflix".
-    queryFn: ({ signal }) => getTransactions({ page, limit: PAGE_SIZE, q, type, status }, { signal }),
+    // The query key is per filter set: a slow search for "n" can't overwrite results for "netflix".
+    ...transactionsQuery({ page, limit: PAGE_SIZE, q, type, status }),
     // Keep showing the previous results while the next page or filter loads.
     placeholderData: keepPreviousData,
   })
@@ -152,11 +152,14 @@ export function TransactionsView() {
           value={status ?? ''}
           onChange={(e) => setFilters({ status: filterParsers.status.parse(e.target.value) })}
         />
-        {filtered && (
-          <Button variant="ghost" className={styles.clear} onClick={clearFilters}>
-            Clear filters
-          </Button>
-        )}
+        {/* Always rendered so its grid track doesn't pop in and shift the row. */}
+        <Button
+          variant="ghost"
+          className={cx(styles.clear, !filtered && styles.hidden)}
+          onClick={clearFilters}
+        >
+          Clear filters
+        </Button>
       </div>
 
       <Card padding="none" className={styles.list} aria-busy={isFetching}>

@@ -1,10 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
-import type { Conversion, Currency, Rate, User } from '@/types/api'
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import type { Currency } from '@/types/api'
 import { CURRENCIES } from '@/types/api'
 import { Button, Card, Input, Money, Select } from '@/components/ui'
-import { convert, getMe, getRate } from '@/lib/api/endpoints'
-import { ignoreAbort } from '@/lib/api/client'
+import { meQuery, rateQuery, useConvert } from '@/lib/api/queries'
 import { parseMoney } from '@/lib/format'
 import styles from './page.module.css'
 
@@ -14,29 +14,13 @@ export default function ConvertPage() {
   const [from, setFrom] = useState<Currency>('USD')
   const [to, setTo] = useState<Currency>('NGN')
   const [amount, setAmount] = useState('')
-  const [result, setResult] = useState<Conversion | null>(null)
-  const [error, setError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
 
-  const [user, setUser] = useState<User>()
-  const [rate, setRate] = useState<Rate>()
-
-  useEffect(() => {
-    const controller = new AbortController()
-    getMe({ signal: controller.signal })
-      .then((res) => setUser(res.data))
-      .catch(ignoreAbort)
-    return () => controller.abort()
-  }, [])
-
-  // Rates take up to 2.5s; abort so a stale pair's rate can't land after the user switches currency.
-  useEffect(() => {
-    const controller = new AbortController()
-    getRate(from, to, { signal: controller.signal })
-      .then((res) => setRate(res.data))
-      .catch(ignoreAbort)
-    return () => controller.abort()
-  }, [from, to])
+  const { data: user } = useQuery(meQuery)
+  const { data: rate } = useQuery(rateQuery(from, to))
+  const conversion = useConvert()
+  const result = conversion.data
+  const error = conversion.error?.message
+  const submitting = conversion.isPending
 
   const value = parseMoney(amount, from) ?? 0
   const fee = Math.round(value * 0.015)
@@ -44,19 +28,9 @@ export default function ConvertPage() {
   const wallet = user?.wallets.find((w) => w.currency === from)
   const canSubmit = value > 0 && from !== to && !submitting
 
-  const handleConvert = async () => {
+  const handleConvert = () => {
     if (!canSubmit) return
-    setError('')
-    setSubmitting(true)
-    try {
-      const res = await convert({ from, to, amount: value })
-      setResult(res.data)
-      setAmount('')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
+    conversion.mutate({ from, to, amount: value }, { onSuccess: () => setAmount('') })
   }
 
   return (

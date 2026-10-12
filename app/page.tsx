@@ -1,27 +1,13 @@
 'use client'
-import { useEffect, useState } from 'react'
-import type { User } from '@/types/api'
+import { useQuery } from '@tanstack/react-query'
 import { BalanceSummary, RatesWidget, RecentTransactions, WalletCard } from '@/components/dashboard'
-import { getMe } from '@/lib/api/endpoints'
-import { ignoreAbort } from '@/lib/api/client'
+import { meQuery } from '@/lib/api/queries'
 import styles from './page.module.css'
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User>()
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: user, isPending } = useQuery(meQuery)
 
-  useEffect(() => {
-    const controller = new AbortController()
-    getMe({ signal: controller.signal })
-      .then((res) => setUser(res.data))
-      .catch(ignoreAbort)
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false)
-      })
-    return () => controller.abort()
-  }, [])
-
-  if (isLoading) return <p className={styles.loading}>Loading…</p>
+  if (isPending) return <p className={styles.loading}>Loading…</p>
 
   return (
     <div className={styles.page}>

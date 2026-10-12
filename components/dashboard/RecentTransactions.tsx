@@ -1,29 +1,18 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import type { Transaction } from '@/types/api'
 import { Card, CardHeader, Drawer, Money } from '@/components/ui'
 import { TransactionRow } from '@/components/transactions'
-import { getTransactions } from '@/lib/api/endpoints'
-import { ignoreAbort } from '@/lib/api/client'
+import { transactionsQuery } from '@/lib/api/queries'
 import { formatDateTime, TRANSACTION_STATUS_LABELS } from '@/lib/format'
 import styles from './RecentTransactions.module.css'
 
 export function RecentTransactions() {
   const [selected, setSelected] = useState<Transaction | null>(null)
-  const [transactions, setTransactions] = useState<Transaction[]>()
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    getTransactions({ limit: 5 }, { signal: controller.signal })
-      .then((res) => setTransactions(res.data))
-      .catch(ignoreAbort)
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false)
-      })
-    return () => controller.abort()
-  }, [])
+  const { data, isPending: isLoading } = useQuery(transactionsQuery({ limit: 5 }))
+  const transactions = data?.data
 
   return (
     <Card padding="none">

@@ -27,6 +27,11 @@
   height: 40px;
 }
 
+/* visibility (not display) keeps the space reserved; also removes it from tab order and a11y tree. */
+.hidden {
+  visibility: hidden;
+}
+
 .list {
   min-height: 120px;
 }

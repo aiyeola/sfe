@@ -13,11 +13,6 @@ export class ApiError extends Error {
   }
 }
 
-/** `.catch(ignoreAbort)` swallows the rejection from an aborted request and rethrows anything else. */
-export function ignoreAbort(err: unknown): void {
-  if ((err as { name?: unknown } | null)?.name !== 'AbortError') throw err
-}
-
 async function request<T>(path: string, init: RequestInit = {}): Promise<ApiSuccess<T>> {
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,

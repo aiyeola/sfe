@@ -6,7 +6,7 @@ import { TransactionsView } from './TransactionsView'
 export const metadata: Metadata = { title: 'Transactions' }
 
 export default function TransactionsPage() {
-  // useSearchParams needs a Suspense boundary.
+  // useSearchParams (and nuqs, which reads it) needs a Suspense boundary.
   return (
     <Suspense fallback={<TransactionListSkeleton />}>
       <TransactionsView />

@@ -1,6 +1,7 @@
 'use client'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useQueryStates, type Nullable } from 'nuqs'
 import { useEffect, useRef } from 'react'
 import type { Transaction } from '@/types/api'
 import { Button, Card, EmptyState, Pagination, Select } from '@/components/ui'
@@ -9,7 +10,7 @@ import { getTransactions } from '@/lib/api/endpoints'
 import { TRANSACTION_STATUS_LABELS, TRANSACTION_TYPE_LABELS } from '@/lib/format'
 import { DetailsDrawer } from './DetailsDrawer'
 import { SearchBox } from './SearchBox'
-import { hasFilters, parseFilters, withParams } from './searchParams'
+import { filterParsers, serializeFilters } from './searchParams'
 import styles from './page.module.css'
 
 const PATH = '/transactions'
@@ -28,14 +29,21 @@ const count = new Intl.NumberFormat('en-GB')
 const plural = (n: number, word: string) => `${count.format(n)} ${word}${n === 1 ? '' : 's'}`
 
 export function TransactionsView() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const filters = parseFilters(searchParams)
-  const { page, q, type, status, tx } = filters
-  const filtered = hasFilters(filters)
+  // nuqs updates are shallow (History API, no server round trip): this page's data is fetched client-side.
+  const [params, setParams] = useQueryStates(filterParsers)
+  const { page } = params
+  const q = params.q.trim()
+  const type = params.type ?? undefined
+  const status = params.status ?? undefined
+  const tx = params.tx || undefined
+  const filtered = Boolean(q || type || status)
 
-  const href = (patch: Parameters<typeof withParams>[1]) => PATH + withParams(searchParams, patch)
-  const clearFilters = () => router.push(href({ q: null, type: null, status: null }), { scroll: false })
+  // Changing a filter goes back to page 1.
+  type FilterPatch = Partial<Nullable<Pick<typeof params, 'q' | 'type' | 'status'>>>
+  const setFilters = (patch: FilterPatch, history: 'push' | 'replace' = 'push') =>
+    setParams({ ...patch, page: null }, { history })
+  const clearFilters = () => setFilters({ q: null, type: null, status: null })
 
   const { data, isError, isFetching, isPlaceholderData, refetch } = useQuery({
     queryKey: ['transactions', { page, q, type, status }],
@@ -51,8 +59,8 @@ export function TransactionsView() {
   const lastPage = meta?.totalPages
   const outOfRange = !isPlaceholderData && lastPage !== undefined && page > lastPage
   useEffect(() => {
-    if (outOfRange) router.replace(PATH + withParams(searchParams, { page: lastPage }))
-  }, [outOfRange, lastPage, router, searchParams])
+    if (outOfRange) setParams({ page: lastPage })
+  }, [outOfRange, lastPage, setParams])
 
   // Opening details pushes a history entry, so Back closes them. Closing after an in-app open goes back
   // to that entry; after arriving from a link there is nothing to go back to, so drop ?tx= instead.
@@ -62,14 +70,14 @@ export function TransactionsView() {
   }, [tx])
   const openDetails = (selected: Transaction) => {
     openedInApp.current = true
-    router.push(href({ tx: selected.id }), { scroll: false })
+    setParams({ tx: selected.id }, { history: 'push' })
   }
   const closeDetails = () => {
     if (openedInApp.current) {
       openedInApp.current = false
-      router.back()
+      history.back()
     } else {
-      router.replace(href({ tx: null }), { scroll: false })
+      setParams({ tx: null })
     }
   }
 
@@ -129,20 +137,20 @@ export function TransactionsView() {
       <div className={styles.filters}>
         <SearchBox
           value={q}
-          onCommit={(next) => router.replace(href({ q: next || null }), { scroll: false })}
+          onCommit={(next) => setFilters({ q: next || null }, 'replace')}
           className={styles.search}
         />
         <Select
           label="Type"
           options={TYPE_OPTIONS}
           value={type ?? ''}
-          onChange={(e) => router.push(href({ type: e.target.value || null }), { scroll: false })}
+          onChange={(e) => setFilters({ type: filterParsers.type.parse(e.target.value) })}
         />
         <Select
           label="Status"
           options={STATUS_OPTIONS}
           value={status ?? ''}
-          onChange={(e) => router.push(href({ status: e.target.value || null }), { scroll: false })}
+          onChange={(e) => setFilters({ status: filterParsers.status.parse(e.target.value) })}
         />
         {filtered && (
           <Button variant="ghost" className={styles.clear} onClick={clearFilters}>
@@ -163,7 +171,11 @@ export function TransactionsView() {
             Showing {count.format((meta.page - 1) * meta.limit + 1)}–
             {count.format(Math.min(meta.page * meta.limit, meta.total))} of {count.format(meta.total)}
           </p>
-          <Pagination page={page} totalPages={meta.totalPages} hrefFor={(p) => href({ page: p })} />
+          <Pagination
+            page={page}
+            totalPages={meta.totalPages}
+            hrefFor={(p) => PATH + serializeFilters(searchParams, { page: p })}
+          />
         </div>
       )}
 

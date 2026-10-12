@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import type { User } from '@/types/api'
 import { BalanceSummary, RatesWidget, RecentTransactions, WalletCard } from '@/components/dashboard'
 import { getMe } from '@/lib/api/endpoints'
+import { ignoreAbort } from '@/lib/api/client'
 import styles from './page.module.css'
 
 export default function DashboardPage() {
@@ -10,9 +11,14 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    getMe()
+    const controller = new AbortController()
+    getMe({ signal: controller.signal })
       .then((res) => setUser(res.data))
-      .finally(() => setIsLoading(false))
+      .catch(ignoreAbort)
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false)
+      })
+    return () => controller.abort()
   }, [])
 
   if (isLoading) return <p className={styles.loading}>Loading…</p>

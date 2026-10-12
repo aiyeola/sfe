@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import type { User } from '@/types/api'
 import { Avatar, Icon } from '@/components/ui'
 import { getMe } from '@/lib/api/endpoints'
+import { ignoreAbort } from '@/lib/api/client'
 import styles from './UserMenu.module.css'
 
 const TIER_LABELS: Record<User['tier'], string> = {
@@ -16,7 +17,11 @@ export function UserMenu() {
   const [user, setUser] = useState<User>()
 
   useEffect(() => {
-    getMe().then((res) => setUser(res.data))
+    const controller = new AbortController()
+    getMe({ signal: controller.signal })
+      .then((res) => setUser(res.data))
+      .catch(ignoreAbort)
+    return () => controller.abort()
   }, [])
 
   return (

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import type { Currency, Rate } from '@/types/api'
 import { Card, CardHeader } from '@/components/ui'
 import { getRate } from '@/lib/api/endpoints'
+import { ignoreAbort } from '@/lib/api/client'
 import { formatTime } from '@/lib/format'
 import styles from './RatesWidget.module.css'
 
@@ -12,9 +13,11 @@ export function RatesWidget({ base }: { base: Currency }) {
   const [rates, setRates] = useState<Rate[]>()
 
   useEffect(() => {
-    Promise.all(QUOTES.map((quote) => getRate(quote, base))).then((results) =>
-      setRates(results.map((res) => res.data))
-    )
+    const controller = new AbortController()
+    Promise.all(QUOTES.map((quote) => getRate(quote, base, { signal: controller.signal })))
+      .then((results) => setRates(results.map((res) => res.data)))
+      .catch(ignoreAbort)
+    return () => controller.abort()
   }, [base])
   const updatedAt = rates?.[0]?.updatedAt
 

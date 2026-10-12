@@ -4,6 +4,7 @@ import type { Conversion, Currency, Rate, User } from '@/types/api'
 import { CURRENCIES } from '@/types/api'
 import { Button, Card, Input, Money, Select } from '@/components/ui'
 import { convert, getMe, getRate } from '@/lib/api/endpoints'
+import { ignoreAbort } from '@/lib/api/client'
 import { parseMoney } from '@/lib/format'
 import styles from './page.module.css'
 
@@ -21,11 +22,20 @@ export default function ConvertPage() {
   const [rate, setRate] = useState<Rate>()
 
   useEffect(() => {
-    getMe().then((res) => setUser(res.data))
+    const controller = new AbortController()
+    getMe({ signal: controller.signal })
+      .then((res) => setUser(res.data))
+      .catch(ignoreAbort)
+    return () => controller.abort()
   }, [])
 
+  // Rates take up to 2.5s; abort so a stale pair's rate can't land after the user switches currency.
   useEffect(() => {
-    getRate(from, to).then((res) => setRate(res.data))
+    const controller = new AbortController()
+    getRate(from, to, { signal: controller.signal })
+      .then((res) => setRate(res.data))
+      .catch(ignoreAbort)
+    return () => controller.abort()
   }, [from, to])
 
   const value = parseMoney(amount, from) ?? 0

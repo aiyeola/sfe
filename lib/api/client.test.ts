@@ -1,4 +1,4 @@
-import { api, ApiError } from './client'
+import { api, ApiError, ignoreAbort } from './client'
 
 describe('api client', () => {
   afterEach(() => vi.unstubAllGlobals())
@@ -29,5 +29,18 @@ describe('api client', () => {
       vi.fn(async () => Response.json({ data: { ok: true } }))
     )
     await expect(api.get('/me')).resolves.toEqual({ data: { ok: true } })
+  })
+})
+
+describe('ignoreAbort', () => {
+  it('swallows aborts and rethrows other errors', async () => {
+    const controller = new AbortController()
+    vi.stubGlobal('fetch', (_: string, init: RequestInit) => {
+      controller.abort()
+      return Promise.reject(init.signal!.reason)
+    })
+    await expect(api.get('/me', { signal: controller.signal }).catch(ignoreAbort)).resolves.toBeUndefined()
+    expect(() => ignoreAbort(new ApiError(500, 'INTERNAL_ERROR', 'boom'))).toThrow('boom')
+    vi.unstubAllGlobals()
   })
 })

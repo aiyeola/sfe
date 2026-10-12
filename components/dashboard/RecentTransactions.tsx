@@ -5,6 +5,7 @@ import type { Transaction } from '@/types/api'
 import { Card, CardHeader, Drawer, Money } from '@/components/ui'
 import { TransactionRow } from '@/components/transactions'
 import { getTransactions } from '@/lib/api/endpoints'
+import { ignoreAbort } from '@/lib/api/client'
 import { formatDateTime, TRANSACTION_STATUS_LABELS } from '@/lib/format'
 import styles from './RecentTransactions.module.css'
 
@@ -14,9 +15,14 @@ export function RecentTransactions() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    getTransactions({ limit: 5 })
+    const controller = new AbortController()
+    getTransactions({ limit: 5 }, { signal: controller.signal })
       .then((res) => setTransactions(res.data))
-      .finally(() => setIsLoading(false))
+      .catch(ignoreAbort)
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false)
+      })
+    return () => controller.abort()
   }, [])
 
   return (

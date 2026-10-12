@@ -1,9 +1,10 @@
 'use client'
-import { useEffect, useState } from 'react'
-import type { ApiErrorBody, Conversion, Currency, Rate, User } from '@/types/api'
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import type { Currency } from '@/types/api'
 import { CURRENCIES } from '@/types/api'
 import { Button, Card, Input, Money, Select } from '@/components/ui'
-import { convert, getMe, getRate } from '@/lib/api/endpoints'
+import { meQuery, rateQuery, useConvert } from '@/lib/api/queries'
 import { parseMoney } from '@/lib/format'
 import styles from './page.module.css'
 
@@ -13,20 +14,13 @@ export default function ConvertPage() {
   const [from, setFrom] = useState<Currency>('USD')
   const [to, setTo] = useState<Currency>('NGN')
   const [amount, setAmount] = useState('')
-  const [result, setResult] = useState<Conversion | null>(null)
-  const [error, setError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
 
-  const [user, setUser] = useState<User>()
-  const [rate, setRate] = useState<Rate>()
-
-  useEffect(() => {
-    getMe().then((res) => setUser(res.data))
-  }, [])
-
-  useEffect(() => {
-    getRate(from, to).then((res) => setRate(res.data))
-  }, [from, to])
+  const { data: user } = useQuery(meQuery)
+  const { data: rate } = useQuery(rateQuery(from, to))
+  const conversion = useConvert()
+  const result = conversion.data
+  const error = conversion.error?.message
+  const submitting = conversion.isPending
 
   const value = parseMoney(amount, from) ?? 0
   const fee = Math.round(value * 0.015)
@@ -34,26 +28,9 @@ export default function ConvertPage() {
   const wallet = user?.wallets.find((w) => w.currency === from)
   const canSubmit = value > 0 && from !== to && !submitting
 
-  const handleConvert = async () => {
+  const handleConvert = () => {
     if (!canSubmit) return
-    setError('')
-    setSubmitting(true)
-    try {
-      // The client doesn't throw on 4xx/5xx, so check for an error body.
-      const res = (await convert({ from, to, amount: value })) as Partial<ApiErrorBody> & {
-        data?: Conversion
-      }
-      if (res.error) {
-        setError(res.error.message)
-      } else if (res.data) {
-        setResult(res.data)
-        setAmount('')
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
+    conversion.mutate({ from, to, amount: value }, { onSuccess: () => setAmount('') })
   }
 
   return (

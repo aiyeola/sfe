@@ -1,6 +1,8 @@
 .row {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  grid-template-areas: 'avatar main status end';
+  /* Fixed status/amount columns keep badges aligned down the list. */
+  grid-template-columns: 40px minmax(0, 1fr) 104px 180px;
   align-items: center;
   gap: var(--space-4);
   width: 100%;
@@ -11,6 +13,14 @@
   background: none;
   text-align: left;
   cursor: pointer;
+  animation: row-in var(--duration-slow) var(--ease-in-out) both;
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 
 .row:last-child {
@@ -21,18 +31,12 @@
   background: var(--color-bg-subtle);
 }
 
-.icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
+.row > :first-child {
+  grid-area: avatar;
 }
 
 .main {
+  grid-area: main;
   min-width: 0;
 }
 
@@ -53,7 +57,13 @@
   white-space: nowrap;
 }
 
+.status {
+  grid-area: status;
+  justify-self: start;
+}
+
 .end {
+  grid-area: end;
   display: block;
   text-align: right;
 }
@@ -74,4 +84,25 @@
   font-size: var(--text-xs);
   color: var(--color-text-subtle);
   white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  /* Amount above status on the right; the time is implied by the day heading. */
+  .row {
+    grid-template-areas:
+      'avatar main end'
+      'avatar main status';
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    row-gap: var(--space-1);
+    column-gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .status {
+    justify-self: end;
+  }
+
+  .meta {
+    display: none;
+  }
 }

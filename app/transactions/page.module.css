@@ -1,0 +1,87 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin-top: var(--space-1);
+  font-size: var(--text-md);
+  color: var(--color-text-muted);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px 180px auto;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.clear {
+  height: 40px;
+}
+
+/* visibility (not display) keeps the space reserved; also removes it from tab order and a11y tree. */
+.hidden {
+  visibility: hidden;
+}
+
+.list {
+  min-height: 120px;
+}
+
+/* On the wrapper so the list fades both ways, not just into the stale state. */
+.list > div {
+  transition: opacity var(--duration-normal) var(--ease-in-out);
+}
+
+.stale {
+  opacity: 0.6;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.showing {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .page {
+    gap: var(--space-5);
+  }
+
+  .filters {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .search,
+  .clear {
+    grid-column: 1 / -1;
+  }
+
+  .clear {
+    justify-self: start;
+    height: 32px;
+    padding: 0;
+  }
+
+  .showing {
+    display: none;
+  }
+}
+
+.drawerState {
+  padding-top: var(--space-10);
+}

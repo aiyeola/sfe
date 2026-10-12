@@ -1,0 +1,19 @@
+.skeleton {
+  display: block;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

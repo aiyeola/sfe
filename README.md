@@ -15,19 +15,25 @@ npm run dev        # http://localhost:3000
 
 The backend is mocked inside this app. See [API.md](./API.md).
 
+**Demoing states.** In development, a **States** panel (bottom right) reloads the current page with a mock
+API scenario (loading, error, empty) and links to page-specific states such as transaction details or
+"not found". In production builds it appears once the URL has a `__scenario` param, e.g.
+`/transactions?__scenario=slow`.
+
 ## Scripts
 
-| Script                 | What it does                    |
-| ---------------------- | ------------------------------- |
-| `npm run dev`          | Dev server                      |
-| `npm run build`        | Production build                |
-| `npm run lint`         | ESLint                          |
-| `npm run typecheck`    | `tsc --noEmit`                  |
-| `npm test`             | Vitest (unit + component tests) |
-| `npm run format`       | Prettier                        |
-| `npm run format:check` | Prettier, check only            |
+| Script                  | What it does                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| `npm run dev`           | Dev server                                                                             |
+| `npm run build`         | Production build                                                                       |
+| `npm run lint`          | ESLint                                                                                 |
+| `npm run typecheck`     | `tsc --noEmit`                                                                         |
+| `npm test`              | Vitest (unit + component tests)                                                        |
+| `npm run test:coverage` | Vitest with coverage; fails below 90% lines, statements and functions, or 85% branches |
+| `npm run format`        | Prettier                                                                               |
+| `npm run format:check`  | Prettier, check only                                                                   |
 
-CI runs lint, typecheck, format:check, test and build on every pull request.
+CI runs lint, typecheck, format:check, test:coverage and build on every pull request.
 
 ## Project layout
 

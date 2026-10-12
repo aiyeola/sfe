@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import { connection } from 'next/server'
 import type { ReactNode } from 'react'
 import { AppShell } from '@/components/layout'
+import { Providers } from './providers'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -18,7 +19,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="en" className={inter.variable}>
       <body>
-        <AppShell>{children}</AppShell>
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   )

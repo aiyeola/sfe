@@ -17,7 +17,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   await connection()
 
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body>
         <Providers>
           <AppShell>{children}</AppShell>

@@ -1,5 +1,5 @@
 import type { Transaction } from '@/types/api'
-import { Skeleton } from '@/components/ui'
+import { EmptyState, ErrorState, Skeleton } from '@/components/ui'
 import { dayLabel, localDayKey } from '@/lib/format'
 import { TransactionRow } from './TransactionRow'
 import styles from './TransactionList.module.css'
@@ -40,13 +40,15 @@ export function TransactionList({ transactions, onSelect }: TransactionListProps
   ))
 }
 
-export function TransactionListSkeleton({ rows = 6 }: { rows?: number }) {
+export function TransactionListSkeleton({ rows = 6, heading = true }: { rows?: number; heading?: boolean }) {
   return (
     <div className={styles.skeleton}>
       <span className="visually-hidden">Loading transactions…</span>
-      <div className={styles.day}>
-        <Skeleton className={styles.dayBar} />
-      </div>
+      {heading && (
+        <div className={styles.day}>
+          <Skeleton className={styles.dayBar} />
+        </div>
+      )}
       {Array.from({ length: rows }, (_, i) => (
         <div key={i} className={styles.skeletonRow}>
           <Skeleton className={styles.circle} />
@@ -61,5 +63,18 @@ export function TransactionListSkeleton({ rows = 6 }: { rows?: number }) {
         </div>
       ))}
     </div>
+  )
+}
+
+/** Shared with the dashboard, so both lists say the same thing. */
+export function TransactionsError({ onRetry, compact }: { onRetry: () => void; compact?: boolean }) {
+  return <ErrorState title="We couldn't load your transactions" onRetry={onRetry} compact={compact} />
+}
+
+export function NoTransactions({ compact }: { compact?: boolean }) {
+  return (
+    <EmptyState icon="inbox" title="No transactions yet" compact={compact}>
+      When you add money, send a transfer or pay with your card, it will show up here.
+    </EmptyState>
   )
 }

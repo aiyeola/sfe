@@ -5,7 +5,12 @@ import { useQueryStates, type Nullable } from 'nuqs'
 import { useEffect, useRef } from 'react'
 import type { Transaction } from '@/types/api'
 import { Button, Card, EmptyState, Pagination, Select } from '@/components/ui'
-import { TransactionList, TransactionListSkeleton } from '@/components/transactions'
+import {
+  NoTransactions,
+  TransactionList,
+  TransactionListSkeleton,
+  TransactionsError,
+} from '@/components/transactions'
 import { transactionsQuery } from '@/lib/api/queries'
 import { cx } from '@/lib/cx'
 import { TRANSACTION_STATUS_LABELS, TRANSACTION_TYPE_LABELS } from '@/lib/format'
@@ -83,20 +88,7 @@ export function TransactionsView() {
 
   let content
   if (isError && !isFetching) {
-    content = (
-      <EmptyState
-        icon="alert"
-        tone="danger"
-        title="We couldn't load your transactions"
-        action={
-          <Button iconLeft="refresh" onClick={() => refetch()}>
-            Try again
-          </Button>
-        }
-      >
-        Check your connection and try again.
-      </EmptyState>
-    )
+    content = <TransactionsError onRetry={() => refetch()} />
   } else if (!transactions || !meta || outOfRange) {
     content = <TransactionListSkeleton />
   } else if (transactions.length === 0 && filtered) {
@@ -114,11 +106,7 @@ export function TransactionsView() {
       </EmptyState>
     )
   } else if (transactions.length === 0) {
-    content = (
-      <EmptyState icon="inbox" title="No transactions yet">
-        When you add money, send a transfer or pay with your card, it will show up here.
-      </EmptyState>
-    )
+    content = <NoTransactions />
   } else {
     content = <TransactionList transactions={transactions} onSelect={openDetails} />
   }

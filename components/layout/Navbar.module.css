@@ -49,11 +49,26 @@
 }
 
 @media (max-width: 640px) {
-  .links {
-    display: none;
+  .inner {
+    flex-wrap: wrap;
+    row-gap: 0;
+    height: auto;
+    padding-top: var(--space-3);
   }
 
-  .inner {
-    justify-content: space-between;
+  /* Tabs move to their own row under the logo and user menu. */
+  .links {
+    order: 1;
+    flex-basis: 100%;
+    gap: var(--space-6);
+  }
+
+  .link {
+    padding: var(--space-3) 0;
+    border-bottom: 2px solid transparent;
+  }
+
+  .active {
+    border-bottom-color: var(--color-primary);
   }
 }

@@ -61,7 +61,7 @@ export function TransactionsView() {
   const transactions = data?.data
 
   // A shared or stale link can point past the last page: go to the last page instead.
-  const lastPage = meta?.totalPages
+  const lastPage = meta && Math.max(1, meta.totalPages) // an empty result may report 0 pages
   const outOfRange = !isPlaceholderData && lastPage !== undefined && page > lastPage
   useEffect(() => {
     if (outOfRange) setParams({ page: lastPage })

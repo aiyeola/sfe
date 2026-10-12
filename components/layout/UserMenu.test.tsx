@@ -34,6 +34,22 @@ describe('UserMenu', () => {
     expect(screen.queryByText('ada@example.com')).toBeNull()
   })
 
+  it('closes on Escape and on a click outside', async () => {
+    mockApi({ '/me': { data: user } })
+    renderWithProviders(<UserMenu />)
+    const trigger = await screen.findByRole('button', { name: 'Ada' })
+
+    await userEvent.click(trigger)
+    await userEvent.keyboard('{Escape}')
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+
+    await userEvent.click(trigger)
+    await userEvent.click(screen.getByText('ada@example.com'))
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    await userEvent.click(document.body)
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  })
+
   it('still opens with a blank avatar when the user fails to load', async () => {
     const fetch = mockApi({})
     const { container } = renderWithProviders(<UserMenu />)

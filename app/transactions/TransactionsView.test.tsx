@@ -79,6 +79,14 @@ describe('TransactionsView', () => {
     expect(screen.queryByRole('navigation', { name: 'Pagination' })).toBeNull()
   })
 
+  it('shows the empty state when an empty result reports 0 pages', async () => {
+    const onUrlUpdate = vi.fn<OnUrlUpdateFunction>()
+    mockApi({ '/transactions': listOf([], { totalPages: 0 }) })
+    renderWithProviders(<TransactionsView />, { onUrlUpdate })
+    expect(await screen.findByText('No transactions yet')).toBeInTheDocument()
+    expect(onUrlUpdate).not.toHaveBeenCalled()
+  })
+
   it('offers to clear filters when nothing matches', async () => {
     const onUrlUpdate = vi.fn<OnUrlUpdateFunction>()
     mockApi({ '/transactions': (url) => listOf(url.searchParams.has('q') ? [] : [tx('a')]) })

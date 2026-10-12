@@ -22,17 +22,18 @@ API scenario (loading, error, empty) and links to page-specific states such as t
 
 ## Scripts
 
-| Script                 | What it does                    |
-| ---------------------- | ------------------------------- |
-| `npm run dev`          | Dev server                      |
-| `npm run build`        | Production build                |
-| `npm run lint`         | ESLint                          |
-| `npm run typecheck`    | `tsc --noEmit`                  |
-| `npm test`             | Vitest (unit + component tests) |
-| `npm run format`       | Prettier                        |
-| `npm run format:check` | Prettier, check only            |
+| Script                  | What it does                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------- |
+| `npm run dev`           | Dev server                                                                             |
+| `npm run build`         | Production build                                                                       |
+| `npm run lint`          | ESLint                                                                                 |
+| `npm run typecheck`     | `tsc --noEmit`                                                                         |
+| `npm test`              | Vitest (unit + component tests)                                                        |
+| `npm run test:coverage` | Vitest with coverage; fails below 90% lines, statements and functions, or 85% branches |
+| `npm run format`        | Prettier                                                                               |
+| `npm run format:check`  | Prettier, check only                                                                   |
 
-CI runs lint, typecheck, format:check, test and build on every pull request.
+CI runs lint, typecheck, format:check, test:coverage and build on every pull request.
 
 ## Project layout
 

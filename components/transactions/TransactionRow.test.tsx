@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import type { Transaction } from '@/types/api'
+import { formatDateTime, formatTime } from '@/lib/format'
 import { initials } from './meta'
 import { TransactionRow } from './TransactionRow'
 
@@ -27,6 +28,29 @@ describe('TransactionRow', () => {
     render(<TransactionRow transaction={tx} />)
     expect(screen.getByText('-₦18,500.00')).toBeInTheDocument()
     expect(screen.getByText('Failed')).toHaveClass('danger')
+  })
+
+  it('signs credits and shows the counterparty initials', () => {
+    const { container } = render(
+      <TransactionRow transaction={{ ...tx, type: 'transfer_in', counterparty: 'Kwame Mensah' }} />
+    )
+    expect(screen.getByText('+₦18,500.00')).toBeInTheDocument()
+    expect(screen.getByText('KM')).toBeInTheDocument()
+    expect(container.querySelector('svg')).toBeNull()
+  })
+
+  it('shows the full date, or only the time under a day heading', () => {
+    const { rerender } = render(<TransactionRow transaction={tx} />)
+    expect(screen.getByText(formatDateTime(tx.createdAt))).toBeInTheDocument()
+    rerender(<TransactionRow transaction={tx} timeOnly />)
+    expect(screen.getByText(formatTime(tx.createdAt))).toBeInTheDocument()
+  })
+
+  it('reports clicks when selectable', () => {
+    const onSelect = vi.fn()
+    render(<TransactionRow transaction={tx} onSelect={onSelect} />)
+    fireEvent.click(screen.getByRole('button'))
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith(tx)
   })
 })
 

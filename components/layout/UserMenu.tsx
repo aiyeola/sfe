@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import type { User } from '@/types/api'
 import { Avatar, Icon } from '@/components/ui'
 import { getMe } from '@/lib/api/endpoints'
-import { ignoreAbort } from '@/lib/api/client'
 import styles from './UserMenu.module.css'
 
 const TIER_LABELS: Record<User['tier'], string> = {
@@ -20,7 +19,8 @@ export function UserMenu() {
     const controller = new AbortController()
     getMe({ signal: controller.signal })
       .then((res) => setUser(res.data))
-      .catch(ignoreAbort)
+      // Non-critical: if /me fails the menu shows a blank avatar instead of an unhandled rejection.
+      .catch(() => {})
     return () => controller.abort()
   }, [])
 

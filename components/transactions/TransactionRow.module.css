@@ -13,6 +13,14 @@
   background: none;
   text-align: left;
   cursor: pointer;
+  animation: row-in var(--duration-slow) var(--ease-in-out) both;
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
 }
 
 .row:last-child {

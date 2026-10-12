@@ -31,9 +31,13 @@
   min-height: 120px;
 }
 
+/* On the wrapper so the list fades both ways, not just into the stale state. */
+.list > div {
+  transition: opacity var(--duration-normal) var(--ease-in-out);
+}
+
 .stale {
   opacity: 0.6;
-  transition: opacity var(--duration-normal) var(--ease-out);
 }
 
 .footer {

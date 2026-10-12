@@ -1,5 +1,5 @@
 'use client'
-import { type ReactNode, useEffect, useId, useRef } from 'react'
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { Icon } from '../Icon'
 import styles from './Drawer.module.css'
 
@@ -18,6 +18,9 @@ export interface DrawerProps {
 export function Drawer({ open, title, onClose, children, footer }: DrawerProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
+  // The last content shown while open, so the panel still has it while it animates out.
+  const [shown, setShown] = useState<{ children: ReactNode; footer?: ReactNode }>()
+  if (open && (shown?.children !== children || shown?.footer !== footer)) setShown({ children, footer })
 
   useEffect(() => {
     const dialog = ref.current
@@ -36,7 +39,7 @@ export function Drawer({ open, title, onClose, children, footer }: DrawerProps) 
       // The panel fills the dialog, so a click whose target is the dialog itself hit the backdrop.
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      {open && (
+      {shown && (
         <div className={styles.panel}>
           <div className={styles.header}>
             <h2 id={titleId} className={styles.title}>
@@ -46,8 +49,8 @@ export function Drawer({ open, title, onClose, children, footer }: DrawerProps) 
               <Icon name="close" size={20} />
             </button>
           </div>
-          <div className={styles.body}>{children}</div>
-          {footer && <div className={styles.footer}>{footer}</div>}
+          <div className={styles.body}>{shown.children}</div>
+          {shown.footer && <div className={styles.footer}>{shown.footer}</div>}
         </div>
       )}
     </dialog>

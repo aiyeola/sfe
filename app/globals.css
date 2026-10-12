@@ -44,6 +44,17 @@ svg {
   display: block;
 }
 
+/* Interactive elements ease between states instead of snapping. */
+a,
+button,
+input,
+select,
+textarea {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-in-out);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -56,4 +67,15 @@ svg {
 /* Lock page scroll behind an open modal (Drawer). */
 body:has(dialog[open]) {
   overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
+  ::backdrop {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

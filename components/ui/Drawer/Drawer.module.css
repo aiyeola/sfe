@@ -11,10 +11,39 @@
   background: var(--color-surface);
   color: inherit;
   box-shadow: var(--shadow-overlay);
+  /* Slides in and out; allow-discrete keeps it rendered until the exit transition finishes. */
+  --drawer-hidden: translateX(100%);
+  transform: var(--drawer-hidden);
+  transition:
+    transform var(--duration-slow) var(--ease-in-out),
+    overlay var(--duration-slow) allow-discrete,
+    display var(--duration-slow) allow-discrete;
+}
+
+.dialog[open] {
+  transform: none;
 }
 
 .dialog::backdrop {
+  background: transparent;
+  transition:
+    background-color var(--duration-slow) var(--ease-in-out),
+    overlay var(--duration-slow) allow-discrete,
+    display var(--duration-slow) allow-discrete;
+}
+
+.dialog[open]::backdrop {
   background: var(--color-overlay);
+}
+
+@starting-style {
+  .dialog[open] {
+    transform: var(--drawer-hidden);
+  }
+
+  .dialog[open]::backdrop {
+    background: transparent;
+  }
 }
 
 .panel {
@@ -72,6 +101,7 @@
     height: auto;
     max-height: 90vh;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    --drawer-hidden: translateY(100%);
   }
 
   .panel {

@@ -2,6 +2,7 @@ import type { NextConfig } from 'next'
 
 // Static security headers for every response, API included. The per-request CSP lives in proxy.ts.
 const securityHeaders = [
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   // Keeps the full same-origin Referer (the mock API reads `__scenario` from it), origin-only cross-site.
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },

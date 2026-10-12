@@ -18,8 +18,8 @@ function contentSecurityPolicy(nonce: string): string {
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? ` 'unsafe-eval'` : ''}`,
     // Dev injects CSS through un-nonced <style> tags (HMR). A nonce disables 'unsafe-inline', so dev drops it.
     isDev ? `style-src 'self' 'unsafe-inline'` : `style-src 'self' 'nonce-${nonce}'`,
-    // Avatars can come from arbitrary CDNs.
-    `img-src 'self' data: blob: https:`,
+    // Avatars are served from our origin (API.md). Add a CDN's origin here if that changes.
+    `img-src 'self' data: blob:`,
     `font-src 'self'`,
     `connect-src 'self'${apiOrigin ? ` ${apiOrigin}` : ''}`,
     `object-src 'none'`,

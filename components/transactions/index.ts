@@ -1,2 +1,3 @@
 export { TransactionRow, type TransactionRowProps } from './TransactionRow'
-export { StatusDot } from './StatusDot'
+export { TransactionAvatar } from './TransactionAvatar'
+export { initials, isCredit, STATUS_TONES, TYPE_ICONS } from './meta'

@@ -15,6 +15,10 @@ npm run dev        # http://localhost:3000
 
 The backend is mocked inside this app. See [API.md](./API.md).
 
+**Demoing states.** In development, a **States** panel (bottom right) reloads the current page with a mock
+API scenario (loading, error, empty) and links to page-specific states such as transaction details or
+"not found". For a production build, set `NEXT_PUBLIC_DEMO_STATES=true` to show it.
+
 ## Scripts
 
 | Script                 | What it does                    |

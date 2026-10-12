@@ -17,7 +17,8 @@ The backend is mocked inside this app. See [API.md](./API.md).
 
 **Demoing states.** In development, a **States** panel (bottom right) reloads the current page with a mock
 API scenario (loading, error, empty) and links to page-specific states such as transaction details or
-"not found". For a production build, set `NEXT_PUBLIC_DEMO_STATES=true` to show it.
+"not found". In production builds it appears once the URL has a `__scenario` param, e.g.
+`/transactions?__scenario=slow`.
 
 ## Scripts
 

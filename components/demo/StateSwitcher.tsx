@@ -41,6 +41,9 @@ export function StateSwitcher() {
   const active = SCENARIOS.find((s) => s.value === current) ?? SCENARIOS[0]
   const routeStates = ROUTE_STATES[pathname]
 
+  // Always available in development. In production it only appears once a link opts into a scenario.
+  if (process.env.NODE_ENV === 'production' && !current) return null
+
   return (
     <details className={styles.panel}>
       <summary className={styles.summary}>
